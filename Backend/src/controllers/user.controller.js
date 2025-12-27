@@ -1,6 +1,6 @@
 // Backend/src/controllers/user.controller.js
 import { AppError } from '../utils/AppError.js';
-import User from '../models/user.js';
+import User from '../models/User.js';
 import Poll from '../models/Poll.js'
 
 export const createUser = async (req, res, next) => {
