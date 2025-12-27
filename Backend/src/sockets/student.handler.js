@@ -2,7 +2,6 @@ import { PollService } from '../services/poll.service.js';
 
 export function initializeStudentHandler(io, { teacherNamespace, pollManager }) {
   io.on('connection', async(socket) => {
-    console.log('Student connected:', socket.id);
     // active poll
      try {
       const activePolls = await PollService.getActivePolls();
@@ -83,7 +82,6 @@ export function initializeStudentHandler(io, { teacherNamespace, pollManager }) 
 
     // Handle disconnection
     socket.on('disconnect', () => {
-      console.log('Student disconnected:', socket.id);
     });
   });
 }

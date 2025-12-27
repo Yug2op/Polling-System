@@ -223,6 +223,16 @@ useEffect(() => {
           <span className="text-[10px] font-bold italic">✦ Intervue Poll</span>
         </div>
 
+        <div className="absolute top-8 right-8">
+          <button
+            onClick={() => navigate('/history')}
+            style={{ background: brandGradient }}
+            className="flex items-center gap-2 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg"
+          >
+            View Poll history
+          </button>
+        </div>
+
         <div className="mb-6">
           <h1 className="text-3xl text-gray-900 mb-2">Let's <span className="font-extrabold">Get Started</span></h1>
           <p className="text-gray-400 max-w-lg text-sm">

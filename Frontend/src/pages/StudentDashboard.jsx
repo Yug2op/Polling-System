@@ -42,8 +42,6 @@ export default function StudentDashboard() {
                         socketRef.current.emit('getPollState', { pollId: activePoll._id, userId }, (resp) => {
                             if (resp?.success && resp.data) {
                                 const serverPoll = resp.data;
-                                console.log(`Syncing Poll ${serverPoll._id}. Has Voted?`, serverPoll.hasVoted);
-
                                 setPolls(prev => {
                                     const exists = prev.find(p => p._id === serverPoll._id);
 
@@ -75,7 +73,6 @@ export default function StudentDashboard() {
         socketRef.current = s;
 
         s.on('connect', () => {
-            console.log('✅ Socket Connected');
             setSocketStatus('Connected');
             syncActivePolls();
         });
