@@ -1,4 +1,3 @@
-// Backend/src/routes/poll.routes.js
 import express from 'express';
 import {
   createPoll,

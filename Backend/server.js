@@ -1,4 +1,3 @@
-// Backend/server.js
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -10,21 +9,13 @@ import { notFound, errorHandler } from './src/middlewares/error.handler.js';
 import { PollService } from './src/services/poll.service.js';
 
 dotenv.config();
-
 const app = express();
 const server = createServer(app);
 
 // Middleware
-// Normalize FRONTEND_URL to remove trailing slash
-const frontendUrl = process.env.FRONTEND_URL 
-  ? process.env.FRONTEND_URL.replace(/\/$/, '') 
-  : 'http://localhost:3000';
-
 app.use(cors({
-  origin: frontendUrl,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -32,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 // Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: frontendUrl,
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     methods: ['GET', 'POST'],
     credentials: true
   },

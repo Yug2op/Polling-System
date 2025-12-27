@@ -1,4 +1,3 @@
-// Backend/src/sockets/student.handler.js
 import { PollService } from '../services/poll.service.js';
 
 export function initializeStudentHandler(io, { teacherNamespace, pollManager }) {

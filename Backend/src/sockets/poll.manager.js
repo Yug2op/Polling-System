@@ -1,4 +1,3 @@
-// Backend/src/sockets/poll.manager.js
 import { PollService } from '../services/poll.service.js';
 
 export class PollManager {

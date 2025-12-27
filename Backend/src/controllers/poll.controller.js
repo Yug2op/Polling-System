@@ -1,4 +1,3 @@
-// Backend/src/controllers/poll.controller.js
 import { PollService } from '../services/poll.service.js';
 
 export const createPoll = async (req, res, next) => {
