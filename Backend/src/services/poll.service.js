@@ -1,5 +1,5 @@
 import Poll from '../models/Poll.js';
-import User from '../models/user.js';
+import User from '../models/User.js'
 import { AppError } from '../utils/AppError.js';
 
 const nowMs = () => Date.now();
