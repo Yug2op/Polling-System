@@ -5,7 +5,7 @@ import { getSessionUser } from '../storage/session.js';
 import { createTeacherSocket } from '../socket/client.js';
 import PollTimer from '../components/PollTimer.jsx';
 import toast from 'react-hot-toast';
-import SessionSidebar from '../components/sessionSidebar.jsx';
+import SessionSidebar from '../components/SessionSidebar.jsx';
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();

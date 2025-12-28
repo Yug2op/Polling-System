@@ -82,7 +82,9 @@ export default function SessionSidebar({
             {/* 2. PARTICIPANTS VIEW */}
             {activeTab === 'participants' && (
               <div className="space-y-2">
-                
+                {participants.length === 0 && (
+                  <p className="text-center text-gray-400 text-xs mt-10">No participants yet!</p>
+                )}
                 {participants.map((p) => (
                   <div key={p.socketId} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
                     <div className="flex items-center gap-3">
