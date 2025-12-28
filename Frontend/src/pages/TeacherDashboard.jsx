@@ -5,6 +5,7 @@ import { getSessionUser } from '../storage/session.js';
 import { createTeacherSocket } from '../socket/client.js';
 import PollTimer from '../components/PollTimer.jsx';
 import toast from 'react-hot-toast';
+import SessionSidebar from '../components/sessionSidebar.jsx';
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
@@ -15,16 +16,18 @@ export default function TeacherDashboard() {
   // --- STATE ---
   const [question, setQuestion] = useState('');
   const [duration, setDuration] = useState(60);
+  const [participants, setParticipants] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [options, setOptions] = useState([
     { text: '', isCorrect: true },
     { text: '', isCorrect: false }
   ]);
   const [loading, setLoading] = useState(false);
-  
+
 
   const [createdPoll, setCreatedPoll] = useState(null);
 
-useEffect(() => {
+  useEffect(() => {
     if (!user || user.role !== 'teacher') {
       navigate('/');
       return;
@@ -32,6 +35,9 @@ useEffect(() => {
 
     const s = createTeacherSocket();
     socketRef.current = s;
+
+    const onParticipantUpdate = (users) => setParticipants(users);
+    const onChatMessage = (msg) =>{setMessages(prev => [...prev, msg])};
 
     // 1. Sync active state on load
     s.on('pollUpdated', ({ poll }) => {
@@ -42,30 +48,41 @@ useEffect(() => {
 
     // 2. Real-time Vote Updates
     s.on('voteReceived', ({ pollId, results, totalVotes }) => {
-      
+
       setCreatedPoll(prev => {
         if (!prev || prev._id !== pollId) {
-            return prev;
+          return prev;
         }
 
         return {
           ...prev,
-          options: results,      
-          totalVotes: totalVotes 
+          options: results,
+          totalVotes: totalVotes
         };
       });
     });
 
     // 3. Poll Ended
-    s.on('pollEnded', ({ data }) => { 
+    s.on('pollEnded', ({ data }) => {
       if (data) {
-        setCreatedPoll({ ...data, status: 'completed' }); 
+        setCreatedPoll({ ...data, status: 'completed' });
         toast.success('Poll has concluded. Results are final.');
       }
     });
 
-    return () => s.disconnect();
-  }, [user, navigate]);
+    // 4. Update Participant
+    s.on('updateParticipantList', onParticipantUpdate);
+
+    // 5. Chat msg
+
+    s.on('receiveChatMessage', onChatMessage);
+
+    return () => {
+      s.off('updateParticipantList', onParticipantUpdate);
+      s.off('receiveChatMessage', onChatMessage);
+      s.disconnect();
+    }
+  }, [user?.id, navigate]);
 
   const onCreatePoll = async () => {
     if (!question.trim()) return toast.error('Question is required');
@@ -86,7 +103,7 @@ useEffect(() => {
 
       setCreatedPoll({ ...poll, status: 'active' });
       toast.success('Poll created and broadcasted');
-      
+
       // Reset form fields
       setQuestion('');
       setOptions([{ text: '', isCorrect: true }, { text: '', isCorrect: false }]);
@@ -94,6 +111,21 @@ useEffect(() => {
       toast.error(err.message || 'Failed to create/start poll');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendMessage = (text) => {
+    socketRef.current.emit('sendChatMessage', {
+      text,
+      senderName: user.name || 'Teacher'
+    });
+  };
+
+  const handleRemoveStudent = (studentSocketId) => {
+    
+    if (window.confirm("Are you sure you want to remove this student?")) {
+      socketRef.current.emit('kickStudent', {targetUserSocketId: studentSocketId });
+
     }
   };
 
@@ -140,31 +172,31 @@ useEffect(() => {
             <div className="bg-gradient-to-r from-[#373737] to-[#6E6E6E] p-4">
               <p className="text-white font-medium text-sm">{createdPoll.question}</p>
             </div>
-            
+
             <div className="p-6 space-y-4">
               {createdPoll.options?.map((opt, i) => {
                 let percentage = 0;
-                
+
                 if (opt.percentage !== undefined) {
-                    percentage = opt.percentage;
+                  percentage = opt.percentage;
                 } else {
-                    const total = createdPoll.totalVotes ?? createdPoll.votedUsers?.length ?? 0;
-                    percentage = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
+                  const total = createdPoll.totalVotes ?? createdPoll.votedUsers?.length ?? 0;
+                  percentage = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
                 }
-                
+
                 return (
                   <div key={i} className="relative h-12 border border-gray-300 rounded-xl overflow-hidden flex items-center bg-gray-50/30">
                     {/* The Bar */}
-                    <div 
-                        className="absolute left-0 top-0 h-full transition-all duration-700 ease-out" 
-                        style={{ 
-                            width: `${percentage}%`, 
-                            background: brandGradient, 
-                            zIndex: 0,
-                            opacity: isPollActive ? 1 : 0.8 
-                        }} 
+                    <div
+                      className="absolute left-0 top-0 h-full transition-all duration-700 ease-out"
+                      style={{
+                        width: `${percentage}%`,
+                        background: brandGradient,
+                        zIndex: 0,
+                        opacity: isPollActive ? 1 : 0.8
+                      }}
                     />
-                    
+
                     <div className="absolute left-4 z-10 flex items-center gap-3">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${percentage > 10 ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-600'}`}>
                         {i + 1}
@@ -174,13 +206,13 @@ useEffect(() => {
                       </span>
                       {/* Show Checkmark if correct and poll is over */}
                       {!isPollActive && opt.isCorrect && (
-                         <span className="bg-green-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow-sm">✓</span>
+                        <span className="bg-green-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow-sm">✓</span>
                       )}
                     </div>
-                    
+
                     {/* The Percentage Label */}
                     <span className={`absolute right-4 text-sm font-bold z-10 ${percentage > 90 ? 'text-white' : 'text-gray-800'}`}>
-                        {percentage}%
+                      {percentage}%
                     </span>
                   </div>
                 );
@@ -211,6 +243,14 @@ useEffect(() => {
             </button>
           </div>
         </div>
+        <SessionSidebar
+          role="teacher"
+          participants={participants}
+          messages={messages}
+          onSendMessage={handleSendMessage}
+          onRemoveStudent={handleRemoveStudent}
+          user={{ ...user, name: user.name || 'Teacher' }}
+        />
       </div>
     );
   }
@@ -283,7 +323,7 @@ useEffect(() => {
                       type="text"
                       value={o.text}
                       onChange={(e) => updateOptionText(i, e.target.value)}
-                      placeholder={`Option ${i+1}`}
+                      placeholder={`Option ${i + 1}`}
                       className="w-full bg-blue-50 border-none px-4 py-3 text-sm focus:ring-0 rounded-lg"
                     />
                   </div>
@@ -326,6 +366,14 @@ useEffect(() => {
             </div>
           </div>
         </div>
+        <SessionSidebar
+          role="teacher"
+          participants={participants}
+          messages={messages}
+          onSendMessage={handleSendMessage}
+          onRemoveStudent={handleRemoveStudent}
+          user={{ ...user, name: user.name || 'Teacher' }}
+        />
       </div>
 
       <div className="fixed bottom-0 left-0 right-16 p-4 bg-white border-t border-gray-100 flex justify-end z-20">

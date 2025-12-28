@@ -5,6 +5,8 @@ import { getSessionUser } from '../storage/session.js';
 import { createStudentSocket } from '../socket/client.js';
 import PollTimer from '../components/PollTimer.jsx';
 import toast from 'react-hot-toast';
+import SessionSidebar from '../components/sessionSidebar.jsx';
+import KickedView from '../components/KickedView.jsx';
 
 export default function StudentDashboard() {
     const navigate = useNavigate();
@@ -20,6 +22,9 @@ export default function StudentDashboard() {
     const [polls, setPolls] = useState([]);
     const [loading, setLoading] = useState(false);
     const [socketStatus, setSocketStatus] = useState('Initializing...');
+    const [messages, setMessages] = useState([]);
+    const [participants, setParticipants] = useState([]);
+    const [isKicked, setIsKicked] = useState(false); 
 
     // Use a ref to track active status
     const hasActivePollRef = useRef(false);
@@ -72,9 +77,39 @@ export default function StudentDashboard() {
         const s = createStudentSocket();
         socketRef.current = s;
 
-        s.on('connect', () => {
+        const handleJoinSession = () => {
+            const displayName = user.name || `Student ${userId.slice(-4)}`;
+            s.emit('joinSession', { name: displayName, userId: userId });
             setSocketStatus('Connected');
             syncActivePolls();
+        };
+
+
+        if (s.connected) {
+            handleJoinSession();
+        } else {
+            s.on('connect', handleJoinSession);
+        }
+
+        setTimeout(() => {
+            if (s.connected) {
+                handleJoinSession();
+            }
+        }, 500);
+
+        s.on('forceDisconnect', ({ reason }) => {
+            setIsKicked(true);
+            toast.error(reason || "You have been removed.");
+            s.disconnect();
+            
+        });
+
+        s.on('receiveChatMessage', (msg) => {
+            setMessages(prev => [...prev, msg]);
+        });
+
+        s.on('updateParticipantList', (users) => {
+            setParticipants(users);
         });
 
         s.on('voteReceived', ({ pollId, results, totalVotes }) => {
@@ -112,10 +147,20 @@ export default function StudentDashboard() {
         return () => {
             if (s) {
                 s.off('voteReceived');
+                s.off('connect', handleJoinSession);
+                s.off('updateParticipantList');
+                s.off('receiveChatMessage');
                 s.disconnect();
             }
         };
-    }, [userId, navigate, syncActivePolls]);
+    }, [userId]);
+
+    const handleSendMessage = (text) => {
+        socketRef.current.emit('sendChatMessage', {
+            text,
+            senderName: user.name || 'Student'
+        });
+    };
 
     useEffect(() => {
         hasActivePollRef.current = polls.some(p => p.status === 'active');
@@ -161,6 +206,13 @@ export default function StudentDashboard() {
         return () => clearInterval(interval);
     }, [syncActivePolls]);
 
+    
+    // Kicked View
+
+    if (isKicked) {
+        return <KickedView />; 
+      }
+
 
     // ---  EMPTY STATE ---
     if (polls.length === 0) {
@@ -174,9 +226,17 @@ export default function StudentDashboard() {
                 </div>
                 <div className="w-12 h-12 border-4 border-indigo-100 border-t-[#4D0ACD] rounded-full animate-spin mb-6" />
                 <h1 className="text-2xl font-bold text-gray-900">Wait for the teacher to ask questions..</h1>
+                <SessionSidebar
+                    role="student"
+                    participants={participants}
+                    messages={messages}
+                    onSendMessage={handleSendMessage}
+                    user={{ ...user, name: user.name || 'Student' }}
+                />
             </div>
         );
     }
+
 
     // --- POLL FEED ---
     return (
@@ -314,6 +374,15 @@ export default function StudentDashboard() {
                     </p>
                 </div>
             </div>
+            <SessionSidebar
+                role="student"
+                participants={participants}
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                user={{ ...user, name: user.name || 'Student' }}
+            />
         </div>
     );
+
+
 }

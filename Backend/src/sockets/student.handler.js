@@ -1,6 +1,9 @@
 import { PollService } from '../services/poll.service.js';
+import { UserManager } from './user.manager.js';
 
 export function initializeStudentHandler(io, { teacherNamespace, pollManager }) {
+  const userManager = new UserManager();
+  
   io.on('connection', async(socket) => {
     // active poll
      try {
@@ -18,6 +21,36 @@ export function initializeStudentHandler(io, { teacherNamespace, pollManager }) 
     } catch (error) {
       console.error('Error sending initial poll state:', error);
     }
+
+    // Session management
+
+    socket.on('joinSession', ({ name, userId }) => {
+      // Track this student
+      userManager.addUser(socket.id, { name, userId, role: 'student' });
+      
+      const currentParticipants = userManager.getParticipants();
+
+      // Notify TEACHERS
+      teacherNamespace.emit('updateParticipantList', currentParticipants);
+      
+      // Notify STUDENTS
+      io.emit('updateParticipantList', currentParticipants);
+      
+    });
+
+    // --- Chat management ---
+    socket.on('sendChatMessage', ({ text, senderName }) => {
+      const messageData = {
+        text,
+        senderName,
+        role: 'student',
+        timestamp: new Date()
+      };
+      
+      // Broadcast to EVERYONE (Teachers + Students)
+      io.emit('receiveChatMessage', messageData);
+      teacherNamespace.emit('receiveChatMessage', messageData);
+    });
 
     // Handle student submitting a vote
     socket.on('submitVote', async ({ pollId, optionIndex, userId }, callback) => {
@@ -80,8 +113,15 @@ export function initializeStudentHandler(io, { teacherNamespace, pollManager }) 
       }
     });
 
-    // Handle disconnection
+    // disconnection
     socket.on('disconnect', () => {
+      // Remove user from tracker
+      userManager.removeUser(socket.id);
+      const currentParticipants = userManager.getParticipants();
+      
+      // Update teacher's list
+      teacherNamespace.emit('updateParticipantList', currentParticipants);
+      io.emit('updateParticipantList', currentParticipants);
     });
   });
 }
