@@ -5,6 +5,7 @@ import RoleSelect from './pages/RoleSelect.jsx';
 import TeacherDashboard from './pages/TeacherDashboard.jsx';
 import StudentDashboard from './pages/StudentDashboard.jsx';
 import NameEntry from './pages/NameEntry.jsx';
+import Login from './pages/Login.jsx';
 import PollHistory from './pages/PollHistory.jsx';
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<RoleSelect />} />
         <Route path="/name" element={<NameEntry />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/teacher" element={<TeacherDashboard />} />
         <Route path="/student" element={<StudentDashboard />} />
         <Route path="/history" element={<PollHistory />} />

@@ -37,32 +37,32 @@ export default function NameEntry() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-white">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 bg-white">
       {/* Logo pill */}
       <div 
         style={{ background: brandGradient }}
-        className="text-white px-4 py-1 rounded-full flex items-center gap-2 mb-8 shadow-md"
+        className="text-white px-3 py-1 sm:px-4 sm:py-1 rounded-full flex items-center gap-1 sm:gap-2 mb-6 sm:mb-8 shadow-md"
       >
-        <span className="text-xs font-bold italic">✦ Intervue Poll</span>
+        <span className="text-[10px] sm:text-xs font-bold italic">✦ KBC Poll</span>
       </div>
 
-      <h1 className="text-3xl text-gray-900 mb-2">Let`s <span className='font-bold'>Get Started</span></h1>
-      <p className="text-gray-600 mb-8">Enter your name to continue</p>
+      <h1 className="text-2xl sm:text-3xl text-gray-900 mb-2 text-center">Let`s <span className='font-bold'>Get Started</span></h1>
+      <p className="text-gray-600 mb-6 sm:mb-8 text-center text-sm sm:text-base">Enter your name to continue</p>
 
-      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4">
+      <form onSubmit={onSubmit} className="w-full max-w-xs sm:max-w-sm space-y-3 sm:space-y-4">
         <input
           type="text"
           placeholder="Enter your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={loading || !name.trim()}
           style={{ background: brandGradient }}
-          className="w-full text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full text-white py-2 sm:py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
         >
           {loading ? 'Creating...' : 'Continue'}
         </button>

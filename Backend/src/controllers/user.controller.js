@@ -4,7 +4,7 @@ import Poll from '../models/Poll.js'
 
 export const createUser = async (req, res, next) => {
   try {
-    const { name, role } = req.body;
+    const { name, role, password } = req.body;
     
     const userExists = await User.findOne({ name });
     if (userExists) {
@@ -14,11 +14,83 @@ export const createUser = async (req, res, next) => {
     const user = await User.create({
       name,
       role,
+      password,
     });
     
     res.status(201).json({ 
       success: true, 
       data: user 
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const signup = async (req, res, next) => {
+  try {
+    const { name, role, password } = req.body;
+    
+    if (!name || !role || !password) {
+      throw new AppError('Name, role, and password are required', 400);
+    }
+
+    const existingUser = await User.findOne({ name });
+    if (existingUser) {
+      throw new AppError('User with this name already exists', 400);
+    }
+
+    const user = await User.create({
+      name,
+      role,
+      password,
+    });
+
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      role: user.role,
+      createdAt: user.createdAt,
+    };
+
+    res.status(201).json({ 
+      success: true, 
+      data: userResponse 
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const login = async (req, res, next) => {
+  try {
+    const { name, password, role } = req.body;
+    
+    if (!name || !password || !role) {
+      throw new AppError('Name, password, and role are required', 400);
+    }
+
+    const user = await User.findOne({ name, role }).select('+password');
+    
+    if (!user) {
+      throw new AppError('Invalid credentials', 401);
+    }
+
+    const isPasswordValid = await user.comparePassword(password);
+    
+    if (!isPasswordValid) {
+      throw new AppError('Invalid credentials', 401);
+    }
+
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      role: user.role,
+      createdAt: user.createdAt,
+    };
+
+    res.status(200).json({ 
+      success: true, 
+      data: userResponse 
     });
   } catch (error) {
     next(error);

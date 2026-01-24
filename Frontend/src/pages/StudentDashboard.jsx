@@ -217,15 +217,15 @@ export default function StudentDashboard() {
     // ---  EMPTY STATE ---
     if (polls.length === 0) {
         return (
-            <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center relative">
-                <div className={`absolute top-4 right-4 text-[10px] px-2 py-1 rounded-full ${socketStatus === 'Connected' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 sm:p-6 text-center relative">
+                <div className={`absolute top-4 right-4 text-[8px] sm:text-[10px] px-2 py-1 rounded-full ${socketStatus === 'Connected' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {socketStatus}
                 </div>
-                <div style={{ background: brandGradient }} className="text-white px-4 py-1 rounded-full text-[10px] font-bold italic mb-8 shadow-sm">
-                    ✦ Intervue Poll
+                <div style={{ background: brandGradient }} className="text-white px-3 py-1 sm:px-4 sm:py-1 rounded-full text-[8px] sm:text-[10px] font-bold italic mb-6 sm:mb-8 shadow-sm">
+                    ✦ KBC Poll
                 </div>
-                <div className="w-12 h-12 border-4 border-indigo-100 border-t-[#4D0ACD] rounded-full animate-spin mb-6" />
-                <h1 className="text-2xl font-bold text-gray-900">Wait for the teacher to ask questions..</h1>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-indigo-100 border-t-[#4D0ACD] rounded-full animate-spin mb-4 sm:mb-6" />
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 px-2 sm:px-4">Wait for the teacher to ask questions..</h1>
                 <SessionSidebar
                     role="student"
                     participants={participants}
@@ -240,11 +240,11 @@ export default function StudentDashboard() {
 
     // --- POLL FEED ---
     return (
-        <div className="min-h-screen bg-gray-50/50 p-8 pb-32">
-            <div className="max-w-2xl mx-auto space-y-16">
+        <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8 pb-24 sm:pb-32">
+            <div className="max-w-2xl mx-auto space-y-8 sm:space-y-12 lg:space-y-16">
 
                 <div className="flex justify-end">
-                    <span className={`text-[10px] px-2 py-1 rounded-full ${socketStatus === 'Connected' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    <span className={`text-[8px] sm:text-[10px] px-2 py-1 rounded-full ${socketStatus === 'Connected' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {socketStatus}
                     </span>
                 </div>
@@ -254,112 +254,112 @@ export default function StudentDashboard() {
 
                     return (
                         <div key={poll._id} className="animate-fadeIn">
-                            <div className="flex items-center gap-4 mb-4">
-                                <h2 className="text-lg font-bold text-gray-800">Question {index + 1}</h2>
-                                {poll.status === 'active' && (
-
-                                    <PollTimer initialTimeRemaining={poll.timeRemaining || 0} />
-
-                                )}
-                            </div>
-
-                            <div className="border border-gray-100 rounded-2xl overflow-hidden shadow-sm bg-white">
-                                <div className="bg-[#5C5C5C] p-4 text-white text-sm font-medium">
-                                    {poll.question}
+                            <div className="mb-6 sm:mb-8 lg:mb-12">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
+                                    <h2 className="text-lg sm:text-xl font-bold text-gray-800">Question {index + 1}</h2>
+                                    {poll.status === 'active' && (
+                                        <PollTimer initialTimeRemaining={poll.timeRemaining || 0} />
+                                    )}
                                 </div>
 
-                                <div className="p-6 space-y-4">
-                                    {poll.options.map((opt, i) => {
-                                        const totalVotes = poll.results?.totalVotes || 1;
-                                        const resultOption = poll.results?.options?.[i];
-                                        const voteCount = resultOption?.votes || opt.votes || 0;
-                                        const percentage = showResults ? Math.round((voteCount / totalVotes) * 100) : 0;
+                                <div className="border border-gray-100 sm:border-2 sm:border-gray-200 rounded-2xl overflow-hidden shadow-sm bg-white">
+                                    <div className="bg-[#5C5C5C] p-3 sm:p-4 text-white text-xs sm:text-sm font-medium">
+                                        {poll.question}
+                                    </div>
 
-                                        const isSelected = poll.selectedOptionIndex === i;
-                                        const isCorrect = resultOption?.isCorrect === true;
-                                        const isIncorrect = resultOption?.isCorrect === false;
+                                    <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                                        {poll.options.map((opt, i) => {
+                                            const totalVotes = poll.results?.totalVotes || 1;
+                                            const resultOption = poll.results?.options?.[i];
+                                            const voteCount = resultOption?.votes || opt.votes || 0;
+                                            const percentage = showResults ? Math.round((voteCount / totalVotes) * 100) : 0;
 
-                                        let barBackground = brandGradient;
-                                        if (showResults) {
-                                            if (isCorrect) barBackground = correctGradient;
-                                            else if (isSelected && isIncorrect) barBackground = wrongGradient;
-                                        }
+                                            const isSelected = poll.selectedOptionIndex === i;
+                                            const isCorrect = resultOption?.isCorrect === true;
+                                            const isIncorrect = resultOption?.isCorrect === false;
 
-                                        return (
-                                            <div
-                                                key={i}
-                                                onClick={() => {
-                                                    if (!poll.hasVoted && poll.status === 'active') {
-                                                        setPolls(prev => prev.map(p => p._id === poll._id ? { ...p, selectedOptionIndex: i } : p));
-                                                    }
-                                                }}
-                                                className={`relative h-12 border rounded-xl overflow-hidden flex items-center px-4 transition-all ${isSelected ? 'border-[#4D0ACD] bg-indigo-50' : 'border-gray-100'
-                                                    } ${!poll.hasVoted && poll.status === 'active' ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'}`}
-                                            >
-                                                {showResults && (
-                                                    <>
-                                                        <div
-                                                            className="absolute left-0 top-0 h-full transition-all duration-1000"
-                                                            style={{ width: `${percentage}%`, background: barBackground, opacity: 0.1, zIndex: 0 }}
-                                                        />
-                                                        <div
-                                                            className="absolute left-0 top-0 h-full transition-all duration-1000"
-                                                            style={{ width: `${percentage}%`, background: barBackground, opacity: 0.8, zIndex: 0 }}
-                                                        />
-                                                    </>
-                                                )}
+                                            let barBackground = brandGradient;
+                                            if (showResults) {
+                                                if (isCorrect) barBackground = correctGradient;
+                                                else if (isSelected && isIncorrect) barBackground = wrongGradient;
+                                            }
 
-                                                <div className="relative z-10 flex w-full justify-between items-center">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${showResults && percentage > 10 ? 'bg-white/30 text-white' : 'bg-indigo-100 text-indigo-600'
-                                                            }`}>
-                                                            {i + 1}
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    onClick={() => {
+                                                        if (!poll.hasVoted && poll.status === 'active') {
+                                                            setPolls(prev => prev.map(p => p._id === poll._id ? { ...p, selectedOptionIndex: i } : p));
+                                                        }
+                                                    }}
+                                                    className={`relative h-10 sm:h-12 border rounded-xl overflow-hidden flex items-center px-3 sm:px-4 transition-all ${isSelected ? 'border-[#4D0ACD] bg-indigo-50' : 'border-gray-100'
+                                                        } ${!poll.hasVoted && poll.status === 'active' ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'}`}
+                                                >
+                                                    {showResults && (
+                                                        <>
+                                                            <div
+                                                                className="absolute left-0 top-0 h-full transition-all duration-1000"
+                                                                style={{ width: `${percentage}%`, background: barBackground, opacity: 0.1, zIndex: 0 }}
+                                                            />
+                                                            <div
+                                                                className="absolute left-0 top-0 h-full transition-all duration-1000"
+                                                                style={{ width: `${percentage}%`, background: barBackground, opacity: 0.8, zIndex: 0 }}
+                                                            />
+                                                        </>
+                                                    )}
+
+                                                    <div className="relative z-10 flex w-full justify-between items-center">
+                                                        <div className="flex items-center gap-2 sm:gap-3">
+                                                            <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold ${showResults && percentage > 10 ? 'bg-white/30 text-white' : 'bg-indigo-100 text-indigo-600'
+                                                                }`}>
+                                                                {i + 1}
+                                                            </div>
+
+                                                            <span className={`text-xs sm:text-sm font-bold ${showResults && percentage > 20 ? 'text-white' : 'text-gray-600'
+                                                                }`}>
+                                                                {opt.text}
+                                                            </span>
+
+                                                            {isSelected && poll.hasVoted && (
+                                                                <span className="bg-indigo-600 text-white rounded-full px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-xs font-bold ml-1 sm:ml-2">
+                                                                    Your Choice
+                                                                </span>
+                                                            )}
+
+                                                            {showResults && isCorrect && (
+                                                                <span className="bg-green-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[8px] sm:text-xs shadow-sm ml-1 sm:ml-2">
+                                                                    ✓
+                                                                </span>
+                                                            )}
                                                         </div>
 
-                                                        <span className={`text-sm font-bold ${showResults && percentage > 20 ? 'text-white' : 'text-gray-600'
-                                                            }`}>
-                                                            {opt.text}
-                                                        </span>
-
-                                                        {isSelected && poll.hasVoted && (
-                                                            <span className="bg-indigo-600 text-white rounded-full px-2 py-1 text-xs font-bold ml-2">
-                                                                Your Choice
-                                                            </span>
-                                                        )}
-
-                                                        {showResults && isCorrect && (
-                                                            <span className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm ml-2">
-                                                                ✓
+                                                        {showResults && (
+                                                            <span className={`text-xs sm:text-sm font-bold ${percentage > 20 ? 'text-black' : 'text-gray-800'}`}>
+                                                                {percentage}%
                                                             </span>
                                                         )}
                                                     </div>
-
-                                                    {showResults && (
-                                                        <span className={`text-sm font-bold ${percentage > 20 ? 'text-black' : 'text-gray-800'}`}>
-                                                            {percentage}%
-                                                        </span>
-                                                    )}
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                            );
+                                        })}
+                                    </div>
 
-                                <div className="p-4 border-t border-gray-50 flex justify-center bg-gray-50/50">
-                                    {!poll.hasVoted && poll.status === 'active' ? (
-                                        <button
-                                            onClick={() => submitVote(poll._id, poll.selectedOptionIndex)}
-                                            disabled={loading || poll.selectedOptionIndex === undefined}
-                                            style={{ background: brandGradient }}
-                                            className="px-8 py-2 rounded-full text-white font-bold shadow-lg active:scale-95 disabled:opacity-50 transition-all text-sm"
-                                        >
-                                            {loading ? 'Sending...' : 'Submit Answer'}
-                                        </button>
-                                    ) : (
-                                        <span className="text-gray-400 text-xs font-bold uppercase tracking-wider">
-                                            {poll.hasVoted ? "Vote Submitted" : "Poll Ended"}
-                                        </span>
-                                    )}
+                                    <div className="p-3 sm:p-4 border-t border-gray-50 flex justify-center bg-gray-50/50">
+                                        {!poll.hasVoted && poll.status === 'active' ? (
+                                            <button
+                                                onClick={() => submitVote(poll._id, poll.selectedOptionIndex)}
+                                                disabled={loading || poll.selectedOptionIndex === undefined}
+                                                style={{ background: brandGradient }}
+                                                className="px-6 sm:px-8 py-2 rounded-full text-white font-bold shadow-lg active:scale-95 disabled:opacity-50 transition-all text-xs sm:text-sm"
+                                            >
+                                                {loading ? 'Sending...' : 'Submit Answer'}
+                                            </button>
+                                        ) : (
+                                            <span className="text-gray-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+                                                {poll.hasVoted ? "Vote Submitted" : "Poll Ended"}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -368,8 +368,8 @@ export default function StudentDashboard() {
 
                 <div ref={bottomRef} />
 
-                <div className="text-center py-8">
-                    <p className="text-gray-400 font-bold text-sm animate-pulse">
+                <div className="text-center py-6 sm:py-8">
+                    <p className="text-gray-400 font-bold text-xs sm:text-sm animate-pulse">
                         Waiting for the teacher to ask a new question...
                     </p>
                 </div>

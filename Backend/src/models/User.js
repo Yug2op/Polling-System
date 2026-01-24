@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
   {
@@ -12,6 +13,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['student', 'teacher'],
       required: [true, 'Role is required'],
+    },
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: [4, 'Password must be at least 4 characters long'],
+      select: false,
     },
     isActive: {
       type: Boolean,
@@ -42,6 +49,24 @@ userSchema.virtual('votes', {
   localField: '_id',
   foreignField: 'user',
 });
+
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+// Method to compare password
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 // Update lastActive timestamp before saving
 userSchema.pre('save', function() {

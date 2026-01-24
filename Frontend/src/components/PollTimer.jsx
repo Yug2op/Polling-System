@@ -34,11 +34,11 @@ export default function PollTimer({ initialTimeRemaining, className = '' }) {
   if (displayTime <= 0) return null;
 
   return (
-    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-600 text-white font-semibold shadow-lg ${className}`}>
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+    <div className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full bg-indigo-600 text-white font-semibold shadow-lg ${className}`}>
+      <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
         <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
       </svg>
-      {formatTime(displayTime)}
+      <span className="text-xs sm:text-sm">{formatTime(displayTime)}</span>
     </div>
   );
 }
